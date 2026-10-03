@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Stock Management</title>
+</head>
+<body>
+  <h1>Products</h1>
+
+  <p>
+    Logged in as {{ current_user.username }} ({{ current_user.role }})
+    | <a href="/logout">Log out</a>
+  </p>
+
+  {% if current_user.role == "manager" %}
+  <p><a href="/sales">View sales history</a></p>
+
+  <form action="/add" method="POST">
+    <input name="name" placeholder="Name" required>
+    <input name="price" type="number" step="0.01" placeholder="Price" required>
+    <input name="quantity" type="number" placeholder="Quantity" required>
+    <input name="threshold" type="number" placeholder="Alert threshold" required>
+    <button type="submit">Add</button>
+  </form>
+  {% endif %}
+
+  <table border="1">
+    <tr>
+      <th>Name</th><th>Price</th><th>Quantity</th><th>Status</th><th>Actions</th>
+    </tr>
+    {% for p in products %}
+    <tr>
+      <td>{{ p.name }}</td>
+      <td>{{ p.price }}</td>
+      <td>{{ p.quantity }}</td>
+      <td>{% if p.quantity <= p.threshold %}Low stock{% else %}OK{% endif %}</td>
+      <td>
+        {% if current_user.role == "manager" %}
+        <a href="/edit/{{ p.id }}">Edit</a>
+        {% endif %}
+
+        <form action="/sell/{{ p.id }}" method="POST" style="display:inline">
+          <input name="quantity" type="number" min="1" value="1" style="width:60px">
+          <button type="submit">Sell</button>
+        </form>
+
+        {% if current_user.role == "manager" %}
+        <form action="/delete/{{ p.id }}" method="POST" style="display:inline"
+              onsubmit="return confirm('Delete this product?');">
+          <button type="submit">Delete</button>
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</body>
+</html>
